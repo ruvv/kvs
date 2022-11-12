@@ -12,48 +12,21 @@ public interface StorageService {
      *
      * @param key   key to associate provided value with
      * @param value value to store
-     * @throws KeyExistsException when provided key is already associated with some value
+     * @throws DuplicateKeyException when provided key is already associated with some value
      */
-    void store(String key, byte[] value) throws KeyExistsException;
+    void store(String key, byte[] value) throws DuplicateKeyException;
 
     /**
      * @param key key associated with requested value
      * @return stream with stored data
-     * @throws KeyNotExistsException when provided key is not associated with a value
+     * @throws MissingKeyException when provided key is not associated with a value
      */
-    InputStream retrieve(String key) throws KeyNotExistsException;
+    InputStream retrieve(String key) throws MissingKeyException;
 
     /**
      * @param key key associated with value to delete
-     * @throws KeyNotExistsException when provided key is not associated with a value
+     * @throws MissingKeyException when provided key is not associated with a value
      */
-    void delete(String key) throws KeyNotExistsException;
+    void delete(String key) throws MissingKeyException;
 
-    /**
-     * Exception indicating key collision on store operation
-     */
-    class KeyExistsException extends RuntimeException {
-
-        public KeyExistsException(String message) {
-            super(message);
-        }
-
-        public KeyExistsException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
-    /**
-     * Exception indicating missing key on retrieve and delete operations
-     */
-    class KeyNotExistsException extends RuntimeException {
-
-        public KeyNotExistsException(String message) {
-            super(message);
-        }
-
-        public KeyNotExistsException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
 }

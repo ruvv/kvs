@@ -1,5 +1,8 @@
-package io.ruv.service;
+package io.ruv.service.impl;
 
+import io.ruv.service.DuplicateKeyException;
+import io.ruv.service.MissingKeyException;
+import io.ruv.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -19,30 +22,32 @@ public class HashStorageService implements StorageService {
      * {@inheritDoc}
      */
     @Override
-    public void store(String key, byte[] value) throws KeyExistsException {
+    public void store(String key, byte[] value) throws DuplicateKeyException {
 
         Supplier<InputStream> wrapper = () -> new ByteArrayInputStream(value);
 
-        if (wrapper != this.storage.putIfAbsent(key, wrapper)) {
+        if (this.storage.putIfAbsent(key, wrapper) != null) {
 
-            throw new KeyExistsException(String.format("Key '%s' is already associated with a value.", key));
+            throw DuplicateKeyException.of(key);
         }
+        log.debug("Store on key '{}'.", key);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public InputStream retrieve(String key) throws KeyNotExistsException {
+    public InputStream retrieve(String key) throws MissingKeyException {
 
         Supplier<InputStream> wrapper = storage.get(key);
 
         if (wrapper != null) {
 
+            log.debug("Retrieve on key '{}'.", key);
             return wrapper.get();
         } else {
 
-            throw new KeyNotExistsException(String.format("Key '%s' is not associated with a value.", key));
+            throw MissingKeyException.of(key);
         }
     }
 
@@ -50,13 +55,14 @@ public class HashStorageService implements StorageService {
      * {@inheritDoc}
      */
     @Override
-    public void delete(String key) throws KeyNotExistsException {
+    public void delete(String key) throws MissingKeyException {
 
         Supplier<InputStream> wrapper = storage.remove(key);
 
         if (wrapper == null) {
 
-            throw new KeyNotExistsException(String.format("Key '%s' is not associated with a value.", key));
+            throw MissingKeyException.of(key);
         }
+        log.debug("Delete on key '{}'.", key);
     }
 }
