@@ -1,15 +1,14 @@
-package io.ruv.service;
+package io.ruv.storage.service;
 
-import io.ruv.util.ErrorCode;
-import io.ruv.util.FrontalExceptionSupport;
+import io.ruv.storage.util.exception.BadRequestException;
+import io.ruv.storage.util.exception.ErrorCode;
 import lombok.Getter;
 
 /**
  * Exception indicating key collision on store operation
  */
 @Getter
-public
-class DuplicateKeyException extends FrontalExceptionSupport {
+public class DuplicateKeyException extends BadRequestException {
 
     private final String key;
     private final ErrorCode errorCode = ErrorCode.DUPLICATE_KEY;

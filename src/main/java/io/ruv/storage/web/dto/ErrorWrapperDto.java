@@ -1,4 +1,4 @@
-package io.ruv.web.dto;
+package io.ruv.storage.web.dto;
 
 import lombok.Data;
 

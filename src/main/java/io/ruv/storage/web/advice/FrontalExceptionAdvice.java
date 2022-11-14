@@ -1,11 +1,9 @@
-package io.ruv.web.advice;
+package io.ruv.storage.web.advice;
 
-import io.ruv.util.FrontalExceptionSupport;
-import io.ruv.web.dto.ErrorWrapperDto;
+import io.ruv.storage.util.exception.FrontalExceptionSupport;
+import io.ruv.storage.web.dto.ErrorWrapperDto;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.springframework.context.MessageSource;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,10 +17,8 @@ public class FrontalExceptionAdvice {
     @ExceptionHandler(FrontalExceptionSupport.class)
     public ResponseEntity<ErrorWrapperDto> frontalError(FrontalExceptionSupport ex) {
 
-        val errorWrapper = ex.makeErrorWrapper(messageSource);
-
-        return ResponseEntity.badRequest()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(errorWrapper);
+        return ResponseEntity
+                .status(ex.getHttpStatus())
+                .body(ex.makeErrorWrapper(messageSource));
     }
 }

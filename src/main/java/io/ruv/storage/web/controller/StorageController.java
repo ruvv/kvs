@@ -1,6 +1,6 @@
-package io.ruv.web.controller;
+package io.ruv.storage.web.controller;
 
-import io.ruv.service.StorageService;
+import io.ruv.storage.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;

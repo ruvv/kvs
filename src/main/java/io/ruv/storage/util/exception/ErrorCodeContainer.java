@@ -1,4 +1,4 @@
-package io.ruv.util;
+package io.ruv.storage.util.exception;
 
 public interface ErrorCodeContainer {
 

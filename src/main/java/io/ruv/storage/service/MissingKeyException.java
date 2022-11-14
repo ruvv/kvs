@@ -1,15 +1,14 @@
-package io.ruv.service;
+package io.ruv.storage.service;
 
-import io.ruv.util.ErrorCode;
-import io.ruv.util.FrontalExceptionSupport;
+import io.ruv.storage.util.exception.BadRequestException;
+import io.ruv.storage.util.exception.ErrorCode;
 import lombok.Getter;
 
 /**
  * Exception indicating missing key on retrieve and delete operations
  */
 @Getter
-public
-class MissingKeyException extends FrontalExceptionSupport {
+public class MissingKeyException extends BadRequestException {
 
     private final String key;
     private final ErrorCode errorCode = ErrorCode.MISSING_KEY;

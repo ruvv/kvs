@@ -1,4 +1,4 @@
-package io.ruv.util;
+package io.ruv.storage.util.exception;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +12,18 @@ import org.springframework.context.i18n.LocaleContextHolder;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
-    MISSING_KEY("errors.missing-key"),
-    DUPLICATE_KEY("errors.duplicate-key");
+    MISSING_KEY("errors.access.missing-key"),
+    DUPLICATE_KEY("errors.access.duplicate-key"),
+
+    PERSISTENCE_WRITE("errors.persistence.write"),
+
+    PERSISTENCE_READ("errors.persistence.read"),
+
+    PERSISTENCE_READ_STORAGE("errors.persistence.read-storage"),
+
+    PERSISTENCE_CLEAN_STORAGE("errors.persistence.clean-storage"),
+
+    SERVICE_UNAVAILABLE("errors.access.service-unavailable");
 
     private final String messageCode;
 

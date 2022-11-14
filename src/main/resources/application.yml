@@ -1,0 +1,5 @@
+storage:
+  persistence:
+    nio:
+      base-path: /var/nio-storage
+      buffer-size: 4096

@@ -1,8 +1,9 @@
-package io.ruv.util;
+package io.ruv.storage.util.exception;
 
-import io.ruv.web.dto.ErrorWrapperDto;
+import io.ruv.storage.web.dto.ErrorWrapperDto;
 import lombok.val;
 import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
 
 public abstract class FrontalExceptionSupport extends RuntimeException implements ErrorCodeContainer {
 
@@ -11,7 +12,14 @@ public abstract class FrontalExceptionSupport extends RuntimeException implement
         super(message);
     }
 
+    public FrontalExceptionSupport(String message, Exception cause) {
+
+        super(message, cause);
+    }
+
     protected abstract Object[] getArgs();
+
+    public abstract HttpStatus getHttpStatus();
 
     public ErrorWrapperDto makeErrorWrapper(MessageSource messageSource) {
 

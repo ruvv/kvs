@@ -1,12 +1,14 @@
-package io.ruv.service.impl;
+package io.ruv.storage.service.impl;
 
-import io.ruv.service.DuplicateKeyException;
-import io.ruv.service.MissingKeyException;
-import io.ruv.util.ErrorCode;
+import io.ruv.storage.persistence.PersistenceStrategy;
+import io.ruv.storage.service.DuplicateKeyException;
+import io.ruv.storage.service.MissingKeyException;
+import io.ruv.storage.util.exception.ErrorCode;
 import lombok.val;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.ByteArrayInputStream;
@@ -19,7 +21,8 @@ import java.util.function.Supplier;
 @SuppressWarnings({"unchecked", "rawtypes", "ConstantConditions"})
 public class HashStorageServiceTest {
 
-    private final HashStorageService hashStorageService = new HashStorageService();
+    private final PersistenceStrategy persistenceStrategy = Mockito.mock(PersistenceStrategy.class);
+    private final HashStorageService hashStorageService = new HashStorageService(persistenceStrategy);
 
     public final ConcurrentHashMap<String, Supplier<InputStream>> internalStorage =
             (ConcurrentHashMap) ReflectionTestUtils.getField(hashStorageService, "storage");
@@ -113,5 +116,26 @@ public class HashStorageServiceTest {
                 .isInstanceOf(MissingKeyException.class)
                 .hasFieldOrPropertyWithValue("key", key)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.MISSING_KEY);
+    }
+
+    @Test
+    public void saveInteractsWithPersistenceStrategy() {
+
+        Supplier<InputStream> supplier = () -> new ByteArrayInputStream(value);
+        internalStorage.put(key, supplier);
+        Supplier<InputStream> otherSupplier = () -> new ByteArrayInputStream(otherValue);
+        internalStorage.put(otherKey, otherSupplier);
+
+        hashStorageService.save();
+
+        Mockito.verify(persistenceStrategy, Mockito.times(1)).persist(Mockito.any());
+    }
+
+    @Test
+    public void loadInteractsWithPersistenceStrategy() {
+
+        hashStorageService.load();
+
+        Mockito.verify(persistenceStrategy, Mockito.times(1)).load(Mockito.any());
     }
 }
