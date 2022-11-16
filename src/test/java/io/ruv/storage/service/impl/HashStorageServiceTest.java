@@ -4,6 +4,7 @@ import io.ruv.storage.persistence.PersistenceStrategy;
 import io.ruv.storage.service.DuplicateKeyException;
 import io.ruv.storage.service.MissingKeyException;
 import io.ruv.storage.util.exception.ErrorCode;
+import io.ruv.storage.util.exception.ServiceUnavailableException;
 import lombok.val;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -16,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @SuppressWarnings({"unchecked", "rawtypes", "ConstantConditions"})
@@ -132,10 +135,56 @@ public class HashStorageServiceTest {
     }
 
     @Test
+    public void accessWhileSaveThrowsException() {
+
+        val latch = new CountDownLatch(1);
+
+        Mockito.doAnswer(invocationOnMock -> {
+
+            //noinspection ResultOfMethodCallIgnored
+            latch.await(3, TimeUnit.SECONDS);
+            return null;
+        }).when(persistenceStrategy).persist(Mockito.any());
+
+        val otherThread = new Thread(hashStorageService::save);
+
+        otherThread.start();
+
+        Assertions.assertThatThrownBy(() -> hashStorageService.retrieve(key))
+                .isInstanceOf(ServiceUnavailableException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SERVICE_UNAVAILABLE);
+
+        latch.countDown();
+    }
+
+    @Test
     public void loadInteractsWithPersistenceStrategy() {
 
         hashStorageService.load();
 
         Mockito.verify(persistenceStrategy, Mockito.times(1)).load(Mockito.any());
+    }
+
+    @Test
+    public void accessWhileLoadThrowsException() {
+
+        val latch = new CountDownLatch(1);
+
+        Mockito.doAnswer(invocationOnMock -> {
+
+            //noinspection ResultOfMethodCallIgnored
+            latch.await(3, TimeUnit.SECONDS);
+            return null;
+        }).when(persistenceStrategy).load(Mockito.any());
+
+        val otherThread = new Thread(hashStorageService::load);
+
+        otherThread.start();
+
+        Assertions.assertThatThrownBy(() -> hashStorageService.retrieve(key))
+                .isInstanceOf(ServiceUnavailableException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.SERVICE_UNAVAILABLE);
+
+        latch.countDown();
     }
 }

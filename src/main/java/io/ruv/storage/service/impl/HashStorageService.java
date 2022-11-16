@@ -93,7 +93,7 @@ public class HashStorageService implements StorageService {
      * {@inheritDoc}
      */
     @Override
-    public void save() throws PersistenceException {
+    public void save() throws PersistenceException, ServiceUnavailableException {
 
         preAccessAction.set(this::unavailableWhileSaving);
         persistenceStrategy.persist(storage.entrySet().stream());
@@ -104,7 +104,7 @@ public class HashStorageService implements StorageService {
      * {@inheritDoc}
      */
     @Override
-    public void load() throws PersistenceException {
+    public void load() throws PersistenceException, ServiceUnavailableException {
 
         preAccessAction.set(this::unavailableWhileLoading);
         persistenceStrategy.load(storage::put);
