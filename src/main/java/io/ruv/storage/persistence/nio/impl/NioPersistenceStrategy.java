@@ -44,7 +44,8 @@ public class NioPersistenceStrategy implements PersistenceStrategy {
     @Override
     public void persist(Stream<Map.Entry<String, Supplier<InputStream>>> stream) throws PersistenceException {
 
-        try (val fileStream = Files.walk(properties.getBasePath())) {
+        // clean up storage directory
+        try (val fileStream = Files.list(properties.getBasePath())) {
 
             fileStream.forEach(path -> {
 
@@ -61,10 +62,11 @@ public class NioPersistenceStrategy implements PersistenceStrategy {
             throw PersistenceException.cleaningStorage(e);
         }
 
+        // save each pair to file
         stream.forEach(entry -> persistOne(entry.getKey(), entry.getValue()));
     }
 
-    public void persistOne(String key, Supplier<InputStream> value) throws PersistenceException {
+    private void persistOne(String key, Supplier<InputStream> value) throws PersistenceException {
 
         val path = properties.getBasePath().resolve(key);
 
@@ -93,7 +95,7 @@ public class NioPersistenceStrategy implements PersistenceStrategy {
     @Override
     public void load(BiConsumer<String, Supplier<InputStream>> loadAction) throws PersistenceException {
 
-        try (val fileStream = Files.walk(properties.getBasePath())) {
+        try (val fileStream = Files.list(properties.getBasePath())) {
 
             fileStream.forEach(path -> loadOne(path, loadAction));
         } catch (IOException e) {
