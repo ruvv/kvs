@@ -1,5 +1,6 @@
 package io.ruv.storage.web.conroller;
 
+import io.ruv.storage.persistence.PersistenceException;
 import io.ruv.storage.service.DuplicateKeyException;
 import io.ruv.storage.service.MissingKeyException;
 import io.ruv.storage.service.StorageService;
@@ -30,6 +31,8 @@ public class StorageControllerTest {
 
     private final String key = "key";
     private final byte[] value = "value".getBytes(StandardCharsets.UTF_8);
+    private final String save = "/api/storage/save";
+    private final String load = "/api/storage/load";
     private final String resource = "/api/storage/" + key;
 
     @Test
@@ -79,7 +82,7 @@ public class StorageControllerTest {
     }
 
     @Test
-    public void getMissingReturnsBadRequestError() throws Exception {
+    public void getMissingReturnsBadRequest() throws Exception {
 
         //noinspection resource
         Mockito.doThrow(MissingKeyException.of(key))
@@ -109,7 +112,7 @@ public class StorageControllerTest {
     }
 
     @Test
-    public void deleteMissingReturnsbadRequestError() throws Exception {
+    public void deleteMissingReturnsBadRequest() throws Exception {
 
         Mockito.doThrow(MissingKeyException.of(key))
                 .when(storageService).delete(key);
@@ -120,5 +123,58 @@ public class StorageControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("message").value(StringContains.containsString(key)));
 
         Mockito.verify(storageService).delete(key);
+    }
+
+    @Test
+    public void saveReturnsOkNoBody() throws Exception {
+
+        Mockito.doNothing()
+                .when(storageService).save();
+
+        mockMvc.perform(MockMvcRequestBuilders.post(save))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(""));
+
+        Mockito.verify(storageService).save();
+    }
+
+    @Test
+    public void saveProblemReturnsInternalServerError() throws Exception {
+
+        Mockito.doThrow(PersistenceException.cleaningStorage(new Exception()))
+                .when(storageService).save();
+
+        mockMvc.perform(MockMvcRequestBuilders.post(save))
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+                .andExpect(MockMvcResultMatchers.jsonPath("errorCode").value(ErrorCode.PERSISTENCE_CLEAN_STORAGE.name()));
+
+
+        Mockito.verify(storageService).save();
+    }
+
+    @Test
+    public void loadReturnsOkNoBody() throws Exception {
+
+        Mockito.doNothing()
+                .when(storageService).load();
+
+        mockMvc.perform(MockMvcRequestBuilders.post(load))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(""));
+
+        Mockito.verify(storageService).load();
+    }
+
+    @Test
+    public void loadProblemReturnsInternalServerError() throws Exception {
+
+        Mockito.doThrow(PersistenceException.readingStorage(new Exception()))
+                .when(storageService).load();
+
+        mockMvc.perform(MockMvcRequestBuilders.post(load))
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+                .andExpect(MockMvcResultMatchers.jsonPath("errorCode").value(ErrorCode.PERSISTENCE_READ_STORAGE.name()));
+
+        Mockito.verify(storageService).load();
     }
 }

@@ -34,4 +34,18 @@ public class StorageController {
         storageService.delete(key);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/save")
+    public ResponseEntity<?> save() {
+
+        storageService.save();
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/load")
+    public ResponseEntity<?> load() {
+
+        storageService.load();
+        return ResponseEntity.ok().build();
+    }
 }
